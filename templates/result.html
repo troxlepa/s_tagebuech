@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<head>
+    <title>{{title}}</title>
+    <script src="js/jscolor-2.5.1/jscolor.js"></script>
+    <style>
+    </style>
+</head>
+<body>
+    <div class="head">
+        <h1>Result</h1>
+        <a href="/upload">New</a><br>
+        <a href="/comp">Comp</a><br>
+    </div>
+    <img src={{fpath}} width="500px"/>
+    <img src={{rpath}} width="500px"/>
+    <img src={{mpath}} width="500px"/>
+
+
+    <form action="/delete/{{num}}" method="post" enctype="multipart/form-data">
+        <input type="submit" value="Delete">
+    </form> 
+     
+</body>

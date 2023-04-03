@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<document>
+<head>
+    <style>
+    document,body{
+            margin:0px;
+			overflow-y: hidden;
+        }
+        #sections{
+            display: flex;
+        }
+        .msvg{
+            height:100vh;
+        }
+        
+        .tit{
+            position:absolute;
+            margin:10px;
+            font-family: sans-serif;
+            text-transform: uppercase;
+            font-weight: 900;
+            line-height: 1.2em;
+            font-size:1.2em;
+            min-width: 50vw;
+            opacity: 0.9;
+        }
+        .sec{
+            height:98vh;
+            display: inline-block;
+            flex-grow: 1
+        }
+        .maintit{
+            position:absolute;
+            margin:10px;
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            text-transform: uppercase;
+            font-weight: 800;
+            font-size:3em;
+            min-width: 50vw;
+
+        }
+    </style>
+
+</head>
+<body>
+    <a href="/upload" style="position:fixed;background: #ffffff;bottom:10px">Upload</a>
+    <div id="sections">
+    <!-- <script>
+        for(s in sections){
+            section = sections[s]
+            var new_section = document.createElement('div');
+            new_section.className = "sec";
+            var c = section.bg_color;
+            console.log(c);
+            new_section.style.setProperty('background','rgb('+c[0]+','+c[1]+','+c[2]+')');
+            new_section.innerHTML = 
+            '<h1 class="tit">17.03.2023<br/>'+ section.title + '</h1>' + 
+            '<img class="msvg" src="static/output/'+section.id+'.svg"></img>';
+            document.getElementById('sections').appendChild(new_section);
+        }
+    </script> -->
+    
+    {% for el in data %}
+    <div class="sec" style="background: {{el.bgcol}};">
+        <a style="margin-top:10px;" class="tit" href="/edit/{{el.id}}">#{{el.id}}</a>
+        <h1 style="margin-top:40px;" class="tit">{{el.title}}</h1>
+        <h1 style="margin-top:60px" class="tit">{{el.subtitle}}</h1>
+        <!-- <h1 style="margin-top:100px" class="tit">{{el.timestamp}}</h1> -->
+        <img class="msvg" src="outputs/{{el.id}}.svg"></img> <!-- {{el.id}} -->
+    </div>
+    {% endfor %}
+    </div>
+</body>
+
+</document>
