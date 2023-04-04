@@ -4,16 +4,72 @@ from pipeline import run_external
 import os
 from werkzeug.utils import secure_filename
 import json
+from google.cloud import storage
+from PIL import Image
+from io import BytesIO
+import datetime
+import uuid
 
 ext = {'jpg','jpeg','png'}
+project_name = "tagebuchbucket"
+url_prefix = f"https://storage.googleapis.com/{project_name}/static"
+
+basepath = os.path.join(os.path.dirname(__file__),'static')
+if not os.path.exists(basepath):
+    os.mkdir(basepath)
+paths = ['inputs','outputs','masks','tmp']
+for name in paths:
+    if not os.path.exists(os.path.join(basepath,name)):
+        os.mkdir(os.path.join(basepath,name))
+
+def read_image(filename):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(project_name)
+    blob = bucket.blob(filename)
+    img = Image.open(BytesIO(blob.download_as_bytes()))
+    return img
+
+def read_settings():
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(project_name)
+    blob = bucket.blob("settings.json")
+    data = json.loads(blob.download_as_string(client=None))
+    return data
+
+def update_settings(data):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(project_name)
+    blob = bucket.blob("settings.json")
+    blob.upload_from_string(json.dumps(data))
+
+def upload_image(data, path, filename):
+    try:
+        client = storage.Client()
+        bucket = client.bucket(project_name)
+        bucket.blob(path+filename).upload_from_string(data,content_type="image/jpeg")
+        return True
+    except Exception as e:
+        print(e)
+    return False
+
+def upload_svg(data, path, filename):
+    try:
+        client = storage.Client()
+        bucket = client.bucket(project_name)
+        bucket.blob(path+filename).upload_from_string(data,content_type="image/svg+xml")
+        return True
+    except Exception as e:
+        print(e)
+    return False
 
 app = Flask(__name__,
-            static_url_path='',
-            static_folder='./static',
+            static_url_path='/static',
+            static_folder='static',
             template_folder='templates')
-app.config['UPLOAD_FOLDER'] = './static/inputs'
-app.config['RESULT_FOLDER'] = './static/outputs'
+app.config['UPLOAD_FOLDER'] = '/app/static/inputs'
+app.config['RESULT_FOLDER'] = '/app/static/outputs'
 
+"""
 @app.route('/inputs/<filename>')
 def upload_img(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
@@ -21,21 +77,21 @@ def upload_img(filename):
 @app.route('/outputs/<filename>')
 def result_img(filename):
     return send_from_directory(app.config['RESULT_FOLDER'], filename)
-
+"""
 
 
 @app.route("/upload")
 def hello():
-    num = random.randint(1000,9999)
-    print(num)
+    obj_id = uuid.uuid1()
     myvar = "hey"
     templateData = {
         'title': 'Hello World',
         'subtitle': myvar,
-        'num':num
+        'num':obj_id
         }
-    #run_external(num)
+    #run_external(obj_id)
     return render_template('index.html',**templateData)
+
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
@@ -50,19 +106,29 @@ def predict():
         
         f = request.files['file']
         fn = str(num).zfill(4) + ".jpg"
-        basepath = os.path.dirname(__file__)
+        svg_fn = str(num).zfill(4) + ".svg"
+        basepath = './static'#os.path.join(os.path.dirname(__file__),'static')
         file_path = os.path.join(
-            basepath,'static','inputs', fn)
-        
+            basepath,'inputs', fn)
         f.save(file_path)
-        file_name=os.path.basename(file_path)
-        run_external(num,title,subtitle,fgcol,bgcol)
-        myvar = "hey"
+
+        success = upload_image(f.read(),"static/uploads/",fn)
+        if not success:
+            print("upload failed!!")
+        output_svg,settings_data = run_external(basepath,num,title,subtitle,fgcol,bgcol)
+        success = upload_svg(output_svg,"static/results/",svg_fn)
+
+        #update settings
+        data = read_settings()
+        data.append(settings_data)
+        update_settings(data)
+
         templateData = {
-        'num' : str(num),
-            'fpath': "inputs/"+str(num).zfill(4)+".jpg",
-            'rpath': "outputs/"+str(num).zfill(4)+".svg",
-            'mpath': "masks/"+str(num).zfill(4)+".png"
+            'num' : str(num),
+            'fpath': str(num).zfill(4)+".jpg",
+            'rpath': str(num).zfill(4)+".svg",
+            'mpath': str(num).zfill(4)+".png",
+            'prefix': url_prefix
             }
         return render_template('result.html',**templateData)
     return ""
@@ -75,26 +141,26 @@ def predicttest():
         'num' : str(num),
         'fpath': "inputs/"+str(num).zfill(4)+".jpg",
         'rpath': "outputs/"+str(num).zfill(4)+".svg",
-        'mpath': "masks/"+str(num).zfill(4)+".png"
+        'mpath': "masks/"+str(num).zfill(4)+".png",
+        'prefix': url_prefix
         }
     return render_template('result.html',**templateData)
 
 @app.route('/comp', methods=['GET'])
 def comp():
-    data = []
-    for el in os.listdir('static/settings'):
-        dp = json.load(open('static/settings/'+el))
-        data.append(dp)
+    data = read_settings()
     data = sorted(data, key=lambda x: -x['timestamp'])
     templateData = {
-        'data' : data
+        'data' : data,
+        'prefix': url_prefix
         }
     return render_template('comp.html',**templateData)
 
 @app.route('/', methods=['GET'])
 def home():
-    return "hello"
+    return "hello from flask 2: " + str(read_settings())
 
+"""
 @app.route('/delete/<num>', methods=['POST'])
 def delete(num):
     basepath = os.path.dirname(__file__)
@@ -113,4 +179,5 @@ def edit(num):
     return render_template('result.html',**templateData)
 
 if __name__ == '__main__':
-        app.run(debug=True, host="localhost", port=8080)
+        app.run(debug=True, host="localhost")
+"""

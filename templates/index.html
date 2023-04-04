@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
     <title>{{title}}</title>
-    <script src="js/jscolor-2.5.1/jscolor.js"></script>
+    <script src="./static/js/jscolor-2.5.1/jscolor.js"></script>
     <style>
         #form{
             display: flex;
@@ -15,8 +15,8 @@
     <a href="/comp">Go To Comp</a><br><br>
     <form id="form" action="/predict" method="post" enctype="multipart/form-data">
         <p> Image: <input type="file" id="file" name="file"></p>
-        <p> Foreground Color: <input name="fgcol" class="color" value="#3399FF80" data-jscolor="{}"></p>
-        <p> Background Color: <input name="bgcol" class="color" value="#3399FF80" data-jscolor="{}"></p>
+        <p> Foreground Color: <input name="fgcol" class="color" value="#E0BD87FF" data-jscolor="{}"></p>
+        <p> Background Color: <input name="bgcol" class="color" value="#FFF1C3FF" data-jscolor="{}"></p>
         <p> Title: <input type="text" id="title" name="title" value=""></p>
         <p> Subtitle: <input type="text" id="subtitle" name="subtitle" value=""></p>
         <p> <input style="display: none;height:0px;width:0px;position: fixed;" type="text" id="num" name="num" value={{num}}></p>

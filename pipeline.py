@@ -17,30 +17,37 @@ import time
 import random
 import json
 
+import os
 
 
-def run_external(num,title_,subtitle_,fgcol_,bgcol_):
+
+def run_external(base_path,num,title_,subtitle_,fgcol_,bgcol_):
     nr = str(num).zfill(4)
     config = [nr,17,7,False,2,1,1,True,True,True,False,fgcol_]
 
-    input_file = f'./static/inputs/{nr.zfill(4)}.jpg'
-    output_file = f'./static/tmp/out{nr.zfill(4)}.svg'
-    output_file_png = f'./static/tmp/out{nr.zfill(4)}.png'
-    output_file_pnm = f'./static/tmp/out{nr.zfill(4)}.pnm'
-    output_file_svg = f'./static/outputs/{nr.zfill(4)}.svg'
-    mask_file = f'./static/masks/{nr.zfill(4)}.png'
-    settings_file = f'./static/settings/{nr.zfill(4)}.json'
+    input_file = f'{base_path}/inputs/{nr.zfill(4)}.jpg'
+    output_file = f'{base_path}/tmp/out{nr.zfill(4)}.svg'
+    output_file_png = f'{base_path}/tmp/out{nr.zfill(4)}.png'
+    output_file_pnm = f'{base_path}/tmp/out{nr.zfill(4)}.pnm'
+    output_file_svg = f'{base_path}/outputs/{nr.zfill(4)}.svg'
+    mask_file = f'{base_path}/masks/{nr.zfill(4)}.png'
+    print(input_file)
+    print(os.listdir('/app/static/inputs'))
+    if not os.path.exists(input_file):
+        print("ERROR: file not found")
+    #settings_file = f'{base_path}/settings/{nr.zfill(4)}.json'
 
     fns = [input_file,output_file,output_file_png,output_file_pnm,output_file_svg,mask_file]
 
-    run_pipeline(fns,config)
+    output_svg = run_pipeline(fns,config)
     pid = nr
     ts = int(time.time())
     title = title_
     subtitle = subtitle_
-    data = {'id':pid,'timestamp':ts,'title':title,'subtitle':subtitle,'fgcol':fgcol_,'bgcol':bgcol_}
-    with open(settings_file, 'w') as outfile:
-        json.dump(data, outfile)
+    data = {'sid':pid[:4],'id':pid,'timestamp':ts,'title':title,'subtitle':subtitle,'fgcol':fgcol_,'bgcol':bgcol_}
+    return output_svg,data
+    #with open(settings_file, 'w') as outfile:
+    #    json.dump(data, outfile)
 
 def append_svg(image,path: Path,color):
     ret_code = ""
@@ -172,7 +179,7 @@ def run_pipeline(fns,config):
         subprocess.run(["convert",output_file_png,output_file_pnm])
         time.sleep(3)
         print("running autotrace...")
-        subprocess.run(["./autotrace.app/Contents/MacOS/autotrace", "--centerline", f"--output-file={output_file_svg}", "--error-threshold=1", "--dpi=72", output_file_pnm])
+        subprocess.run(["autotrace", "--centerline", f"--output-file={output_file_svg}", "--error-threshold=1", "--dpi=72", output_file_pnm])
         print("finished")
         time.sleep(8)
         fp = open(output_file_svg,"r")
@@ -188,6 +195,8 @@ def run_pipeline(fns,config):
         fpw = open(output_file_svg,"w")
         fpw.write(res_code)
         fpw.close()
+        return res_code
+    return ""
 
 if __name__ == "__main__":
     num = random.randint(10,14)

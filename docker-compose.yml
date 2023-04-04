@@ -1,0 +1,13 @@
+version: "3"
+services:
+  web:
+    build: .
+    environment:
+      FLASK_DEBUG: 1
+      FLASK_APP: ./app.py
+      GOOGLE_APPLICATION_CREDENTIALS: /tmp/keys/application_default_credentials.json
+      GOOGLE_CLOUD_PROJECT: meintagebuch
+    ports: ['7007:7007']
+    volumes:
+      - '.:/app'
+      - ~/.config/gcloud/application_default_credentials.json:/tmp/keys/application_default_credentials.json:ro

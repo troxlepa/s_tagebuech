@@ -11,9 +11,8 @@
         <a href="/upload">New</a><br>
         <a href="/comp">Comp</a><br>
     </div>
-    <img src={{fpath}} width="500px"/>
-    <img src={{rpath}} width="500px"/>
-    <img src={{mpath}} width="500px"/>
+    <img src={{prefix}}/uploads/{{fpath}} width="500px"/>
+    <img src={{prefix}}/results/{{rpath}} width="500px"/>
 
 
     <form action="/delete/{{num}}" method="post" enctype="multipart/form-data">
