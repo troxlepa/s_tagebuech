@@ -1,5 +1,10 @@
 # custom
 .DS_store
+/static/.DS_store
+/static/outputs/*
+/static/inputs/*
+/static/tmp/*
+/static/masks/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
