@@ -26,16 +26,15 @@ def run_external(base_path,num,title_,subtitle_,fgcol_,bgcol_):
     config = [nr,17,7,False,2,1,1,True,True,True,False,fgcol_]
 
     input_file = f'{base_path}/inputs/{nr.zfill(4)}.jpg'
-    output_file = f'{base_path}/tmp/out{nr.zfill(4)}.svg'
-    output_file_png = f'{base_path}/tmp/out{nr.zfill(4)}.png'
-    output_file_pnm = f'{base_path}/tmp/out{nr.zfill(4)}.pnm'
+    output_file = f'{base_path}/tmp/out.svg'
+    output_file_png = f'{base_path}/tmp/out.png'
+    output_file_pnm = f'{base_path}/tmp/out.pnm'
     output_file_svg = f'{base_path}/outputs/{nr.zfill(4)}.svg'
-    mask_file = f'{base_path}/masks/{nr.zfill(4)}.png'
+    mask_file = f'{base_path}/masks/tmp_mask.png'
     print(input_file)
     print(os.listdir('/app/static/inputs'))
     if not os.path.exists(input_file):
         print("ERROR: file not found")
-    #settings_file = f'{base_path}/settings/{nr.zfill(4)}.json'
 
     fns = [input_file,output_file,output_file_png,output_file_pnm,output_file_svg,mask_file]
 
@@ -46,8 +45,6 @@ def run_external(base_path,num,title_,subtitle_,fgcol_,bgcol_):
     subtitle = subtitle_
     data = {'sid':pid[:4],'id':pid,'timestamp':ts,'title':title,'subtitle':subtitle,'fgcol':fgcol_,'bgcol':bgcol_}
     return output_svg,data
-    #with open(settings_file, 'w') as outfile:
-    #    json.dump(data, outfile)
 
 def append_svg(image,path: Path,color):
     ret_code = ""
@@ -122,11 +119,6 @@ def run_pipeline(fns,config):
         if height > 1000:
             # resize image
             img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
-        bbx,_ = get_rect(input_file)
-
-        img = img[bbx[0][1]:bbx[2][1],bbx[0][0]:bbx[2][0]]
-        if len(img.shape) < 2:
-            print("ERROR in cropping!!")
         if rot:
             img = cv2.rotate(img,rotateCode=cv2.ROTATE_90_COUNTERCLOCKWISE)
         img = cv2.medianBlur(img,3)
@@ -160,11 +152,6 @@ def run_pipeline(fns,config):
     args['output'] = 'temp.svg'
     args['color'] = '#000000'
     horizont = Image.fromarray(horizont)
-    """
-    backend_svg(args, horizont, plist, True)
-    fp = open(args['output'],"r")
-    svg_code = fp.read()
-    """
 
     if write_svg:
         img = cv2.imread(output_file_png,0)
@@ -187,7 +174,7 @@ def run_pipeline(fns,config):
         fp.close()
         idx = svg_code.find('<path')
         svg_code = svg_code[idx:]
-        newheader = f'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"> <svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">'
+        newheader = f'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"> <svg width="{width}" height="{height*1.1}" xmlns="http://www.w3.org/2000/svg">'
         style_code = '<style type="text/css"> path{stroke-width:20;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}</style>'
         if do_mask:
             mask_code = append_svg(horizont,plist,fgcol)

@@ -7,12 +7,12 @@
 </head>
 <body>
     <div class="head">
-        <h1>Result</h1>
-        <a href="/upload">New</a><br>
-        <a href="/comp">Comp</a><br>
+        <h1>Resultat</h1>
+        <a href="/upload">Neuer Eintrag</a><br>
+        <a href="/">Zum Tagebuch</a><br>
     </div>
-    <img src={{prefix}}/uploads/{{fpath}} width="500px"/>
-    <img src={{prefix}}/results/{{rpath}} width="500px"/>
+    <img src={{prefix}}/uploads/{{fpath}} height="400px"/>
+    <img src={{prefix}}/results/{{rpath}} height="400px"/>
 
 
     <form action="/delete/{{num}}" method="post" enctype="multipart/form-data">

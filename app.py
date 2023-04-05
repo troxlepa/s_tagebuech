@@ -42,11 +42,11 @@ def update_settings(data):
     blob = bucket.blob("settings.json")
     blob.upload_from_string(json.dumps(data))
 
-def upload_image(data, path, filename):
+def upload_image(filepath, path, filename):
     try:
         client = storage.Client()
         bucket = client.bucket(project_name)
-        bucket.blob(path+filename).upload_from_string(data,content_type="image/jpeg")
+        bucket.blob(path+filename).upload_from_filename(filepath)
         return True
     except Exception as e:
         print(e)
@@ -92,7 +92,6 @@ def hello():
     #run_external(obj_id)
     return render_template('index.html',**templateData)
 
-
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
     if request.method == 'POST':
@@ -107,12 +106,12 @@ def predict():
         f = request.files['file']
         fn = str(num).zfill(4) + ".jpg"
         svg_fn = str(num).zfill(4) + ".svg"
-        basepath = './static'#os.path.join(os.path.dirname(__file__),'static')
+        basepath = './static'
         file_path = os.path.join(
             basepath,'inputs', fn)
         f.save(file_path)
 
-        success = upload_image(f.read(),"static/uploads/",fn)
+        success = upload_image(file_path,"static/uploads/",fn)
         if not success:
             print("upload failed!!")
         output_svg,settings_data = run_external(basepath,num,title,subtitle,fgcol,bgcol)
@@ -133,41 +132,29 @@ def predict():
         return render_template('result.html',**templateData)
     return ""
 
-@app.route('/testpredict', methods=['GET', 'POST'])
-def predicttest():
-    # Get the file from post request
-    num = 12
-    templateData = {
-        'num' : str(num),
-        'fpath': "inputs/"+str(num).zfill(4)+".jpg",
-        'rpath': "outputs/"+str(num).zfill(4)+".svg",
-        'mpath': "masks/"+str(num).zfill(4)+".png",
-        'prefix': url_prefix
-        }
-    return render_template('result.html',**templateData)
-
-@app.route('/comp', methods=['GET'])
+@app.route('/', methods=['GET'])
 def comp():
     data = read_settings()
     data = sorted(data, key=lambda x: -x['timestamp'])
     templateData = {
-        'data' : data,
+        'data' : data[:10],
         'prefix': url_prefix
         }
     return render_template('comp.html',**templateData)
 
-@app.route('/', methods=['GET'])
+@app.route('/test', methods=['GET'])
 def home():
-    return "hello from flask 2: " + str(read_settings())
+    return "hello from flask 2: "
+
+
+@app.route('/delete/<num>', methods=['POST','GET'])
+def delete(num):
+    data = read_settings()
+    res = [el for el in data if not (str(el['id']) == num)]
+    update_settings(res)
+    return redirect('/')
 
 """
-@app.route('/delete/<num>', methods=['POST'])
-def delete(num):
-    basepath = os.path.dirname(__file__)
-    os.remove(os.path.join(basepath,'static','settings',num+".json"))
-    return redirect('/comp')
-
-
 @app.route('/edit/<num>', methods=['GET'])
 def edit(num):
     templateData = {

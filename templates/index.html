@@ -1,25 +1,82 @@
 <!DOCTYPE html>
+<html>
 <head>
     <title>{{title}}</title>
     <script src="./static/js/jscolor-2.5.1/jscolor.js"></script>
+    <link rel="stylesheet" href="./static/css/cropper.css">
     <style>
         #form{
             display: flex;
             flex-direction: column;
         }
+
     </style>
 
 </head>
 <body>
-    <h1>Upload Image</h1>
-    <a href="/comp">Go To Comp</a><br><br>
-    <form id="form" action="/predict" method="post" enctype="multipart/form-data">
-        <p> Image: <input type="file" id="file" name="file"></p>
-        <p> Foreground Color: <input name="fgcol" class="color" value="#E0BD87FF" data-jscolor="{}"></p>
-        <p> Background Color: <input name="bgcol" class="color" value="#FFF1C3FF" data-jscolor="{}"></p>
-        <p> Title: <input type="text" id="title" name="title" value=""></p>
-        <p> Subtitle: <input type="text" id="subtitle" name="subtitle" value=""></p>
-        <p> <input style="display: none;height:0px;width:0px;position: fixed;" type="text" id="num" name="num" value={{num}}></p>
-        <p> <input type="submit" value="Submit"> </p>
-    </form>    
+    <div class="grid_parent">
+        <div class="div3">
+            <h1>Upload Image</h1>
+            <a href="/comp">Go To Comp</a>
+        </div>
+        <div class="div4">
+            <form id="form" action="/predict" method="post" enctype="multipart/form-data">
+                <p> Image: <input type="file" id="file_input" name="file"></p>
+                <div class="div2">
+                    <img id="previewImg" src="#" alt="Preview" width="400px"/>
+                    <p>
+                        <button type="button" id="button">Zuschneiden</button>
+                      </p>
+                </div>
+                <p> Vordergrund Farbe: <input name="fgcol" class="color" value="#E0BD87FF" data-jscolor="{}"></p>
+                <p> Hintergrund Farbe: <input name="bgcol" class="color" value="#FFF1C3FF" data-jscolor="{}"></p>
+                <p> Titel: <input type="text" id="title" name="title" value=""></p>
+                <p> Datum: <input type="date" id="subtitle" name="subtitle" value=""></p>
+                <input type="hidden" id="num" name="num" value={{num}}>
+                <p> <input type="submit" value="Submit"> </p>
+            </form>   
+        </div>
+    </div>
+    <script src="./static/js/cropper.js"></script>
+    <script>
+        var croppable = false;
+        var cropper;
+        var image = document.getElementById('previewImg');
+        var button = document.getElementById('button');
+        var file = document.getElementById('file_input');
+        file.onchange = evt => {
+            const [f] = file.files
+            if (f) {
+                previewImg.src = URL.createObjectURL(f);
+                
+                cropper = new Cropper(image, {
+                    viewMode: 1,
+                    ready: function () {
+                    croppable = true;
+                    },
+                });
+            }
+        } 
+
+        button.onclick = function () {
+            var croppedCanvas;
+            var fileInput = document.getElementById('file_input');
+            if (!croppable) {
+                return;
+            }
+
+            croppedCanvas = cropper.getCroppedCanvas();
+            var dataURL = croppedCanvas.toDataURL();
+
+            croppedCanvas.toBlob((blob) => {
+                let file = new File([blob], "crop.jpg",{type:"image/jpeg", lastModified: new Date().getTime()});
+                let container = new DataTransfer();
+                container.items.add(file);
+                fileInput.files = container.files;
+            });
+            var myForm = document.getElementById('form');
+        };
+
+    </script>
 </body>
+</html>

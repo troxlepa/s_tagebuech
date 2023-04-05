@@ -11,6 +11,7 @@
         }
         .msvg{
             height:100vh;
+            padding-top:8vh;
         }
         
         .tit{
@@ -25,7 +26,7 @@
             opacity: 0.9;
         }
         .sec{
-            height:98vh;
+            height:120vh;
             display: inline-block;
             flex-grow: 1
         }
@@ -45,28 +46,13 @@
 <body>
     <a href="/upload" style="position:fixed;background: #ffffff;bottom:10px;padding:10px">Neuer Eintrag</a>
     <div id="sections">
-    <!-- <script>
-        for(s in sections){
-            section = sections[s]
-            var new_section = document.createElement('div');
-            new_section.className = "sec";
-            var c = section.bg_color;
-            console.log(c);
-            new_section.style.setProperty('background','rgb('+c[0]+','+c[1]+','+c[2]+')');
-            new_section.innerHTML = 
-            '<h1 class="tit">17.03.2023<br/>'+ section.title + '</h1>' + 
-            '<img class="msvg" src="static/output/'+section.id+'.svg"></img>';
-            document.getElementById('sections').appendChild(new_section);
-        }
-    </script> -->
     
     {% for el in data %}
     <div class="sec" style="background: {{el.bgcol}};">
-        <a style="margin-top:10px;" class="tit" href="/edit/{{el.id}}">#{{el.sid}}</a>
+        <a style="margin-top:10px;" class="tit" href="/delete/{{el.id}}">#{{el.sid}}</a>
         <h1 style="margin-top:40px;" class="tit">{{el.title}}</h1>
         <h1 style="margin-top:60px" class="tit">{{el.subtitle}}</h1>
-        <!-- <h1 style="margin-top:100px" class="tit">{{el.timestamp}}</h1> -->
-        <img class="msvg" src="{{prefix}}/results/{{el.id}}.svg"></img> <!-- {{el.id}} -->
+        <img class="msvg" src="{{prefix}}/results/{{el.id}}.svg"></img> 
     </div>
     {% endfor %}
     </div>
