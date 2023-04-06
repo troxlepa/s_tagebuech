@@ -5,12 +5,13 @@
     document,body{
             margin:0px;
 			overflow-y: hidden;
+            background: #333;
         }
         #sections{
             display: flex;
         }
         .msvg{
-            height:100vh;
+            height:50vh;
             padding-top:8vh;
         }
         
@@ -26,7 +27,7 @@
             opacity: 0.9;
         }
         .sec{
-            height:120vh;
+            height:53.4vh;
             display: inline-block;
             flex-grow: 1
         }
@@ -38,7 +39,14 @@
             font-weight: 800;
             font-size:3em;
             min-width: 50vw;
-
+        }
+        @media screen and (min-width: 900px) {
+            .msvg{
+                height:100vh;
+            }
+            .sec{
+                height:98.9vh;
+            }
         }
     </style>
 

@@ -69,17 +69,6 @@ app = Flask(__name__,
 app.config['UPLOAD_FOLDER'] = '/app/static/inputs'
 app.config['RESULT_FOLDER'] = '/app/static/outputs'
 
-"""
-@app.route('/inputs/<filename>')
-def upload_img(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-@app.route('/outputs/<filename>')
-def result_img(filename):
-    return send_from_directory(app.config['RESULT_FOLDER'], filename)
-"""
-
-
 @app.route("/upload")
 def hello():
     obj_id = uuid.uuid1()
@@ -104,14 +93,15 @@ def predict():
         bgcol = request.form.get('bgcol')
         
         f = request.files['file']
-        fn = str(num).zfill(4) + ".jpg"
+        fn = 'tmpx.jpg'#str(num).zfill(4) + ".jpg"
+        cfn = str(num).zfill(4) + ".jpg"
         svg_fn = str(num).zfill(4) + ".svg"
         basepath = './static'
         file_path = os.path.join(
             basepath,'inputs', fn)
         f.save(file_path)
 
-        success = upload_image(file_path,"static/uploads/",fn)
+        success = upload_image(file_path,"static/uploads/",cfn)
         if not success:
             print("upload failed!!")
         output_svg,settings_data = run_external(basepath,num,title,subtitle,fgcol,bgcol)
@@ -153,18 +143,3 @@ def delete(num):
     res = [el for el in data if not (str(el['id']) == num)]
     update_settings(res)
     return redirect('/')
-
-"""
-@app.route('/edit/<num>', methods=['GET'])
-def edit(num):
-    templateData = {
-        'num' : str(num),
-        'fpath': url_for('static', filename="inputs/"+str(num).zfill(4)+".jpg"),
-        'rpath': url_for('static', filename="outputs/"+str(num).zfill(4)+".svg"),
-        'mpath': url_for('static', filename="masks/"+str(num).zfill(4)+".png")
-        }
-    return render_template('result.html',**templateData)
-
-if __name__ == '__main__':
-        app.run(debug=True, host="localhost")
-"""

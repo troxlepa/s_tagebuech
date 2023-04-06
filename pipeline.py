@@ -25,11 +25,11 @@ def run_external(base_path,num,title_,subtitle_,fgcol_,bgcol_):
     nr = str(num).zfill(4)
     config = [nr,17,7,False,2,1,1,True,True,True,False,fgcol_]
 
-    input_file = f'{base_path}/inputs/{nr.zfill(4)}.jpg'
+    input_file = f'{base_path}/inputs/tmpx.jpg'
     output_file = f'{base_path}/tmp/out.svg'
     output_file_png = f'{base_path}/tmp/out.png'
     output_file_pnm = f'{base_path}/tmp/out.pnm'
-    output_file_svg = f'{base_path}/outputs/{nr.zfill(4)}.svg'
+    output_file_svg = f'{base_path}/outputs/tmpx.svg'
     mask_file = f'{base_path}/masks/tmp_mask.png'
     print(input_file)
     print(os.listdir('/app/static/inputs'))

@@ -30,5 +30,5 @@ RUN pip3 install -r requirements.txt
 # Bundle app source
 COPY . .
 
-EXPOSE 7007
-CMD [ "flask", "run","--host","0.0.0.0","--port","7007"]
+EXPOSE 8080
+CMD [ "flask", "run","--host","0.0.0.0","--port","8080"]
