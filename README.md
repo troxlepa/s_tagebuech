@@ -1,19 +1,20 @@
-# s_tagebuech
 <p align="center">
  <img alt="Preview" width="900" src="https://github.com/troxlepa/s_tagebuech/blob/main/res/preview.png"/>
 </p>
+
+# s'Tagebuech
+
 A minimal diary for digitizing and displaying hand-drawn line art sketches. Realized with OpenCV and Autotrace and ready to be deployed on Google Cloud.
 The application takes a photo of a sketch and parameterizes the lines and segemnts the background to display it in a lightweight SVG.
 
 <p align="center">
  <img alt="Comparison" width="900" src="https://github.com/troxlepa/s_tagebuech/blob/main/res/combined.png"/>
-</p>
+</p
 
-The idea of s_tagebuch is to combine sketch entries such that the incoming and outgoing strokes align, creating a continuous horizont.
+The idea of s'Tagebuech is to combine sketch entries such that the incoming and outgoing strokes align, creating a continuous horizont.
 
 ## Installation
-
-### Default Installation (Ubuntu / MacOS)ß
+### Default Installation (Ubuntu / MacOS)
 
 install ```autotrace```(built from source)
 install ```requirements.txt```
