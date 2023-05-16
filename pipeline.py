@@ -1,7 +1,6 @@
 import pyvips
 from PIL import Image
 import cv2
-import numpy as np
 from skimage.morphology import skeletonize
 import matplotlib.pyplot as plt
 from potrace import Bitmap
@@ -9,14 +8,8 @@ from potrace import Bitmap
 from potrace import POTRACE_CORNER, Path
 from horizont import get_horizont
 
-from rectcrop import get_rect
-
 import subprocess
 import time
-
-import random
-import json
-
 import os
 
 
@@ -184,7 +177,3 @@ def run_pipeline(fns,config):
         fpw.close()
         return res_code
     return ""
-
-if __name__ == "__main__":
-    num = random.randint(10,14)
-    run_external(num,"Test","Subtest")

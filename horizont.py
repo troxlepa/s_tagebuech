@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 
-
-
 def get_horizont(input_file,iterations):
     img = cv2.imread(input_file,cv2.IMREAD_UNCHANGED)
     alpha_channel = img[:, :, 3]

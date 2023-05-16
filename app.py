@@ -1,13 +1,10 @@
-from flask import Flask, render_template, request, redirect, send_from_directory, flash, url_for
-import random
+from flask import Flask, render_template, request, redirect
 from pipeline import run_external
 import os
-from werkzeug.utils import secure_filename
 import json
 from google.cloud import storage
 from PIL import Image
 from io import BytesIO
-import datetime
 import uuid
 
 ext = {'jpg','jpeg','png'}
@@ -96,14 +93,12 @@ def hello():
         'subtitle': myvar,
         'num':obj_id
         }
-    #run_external(obj_id)
     return render_template('index.html',**templateData)
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
     if request.method == 'POST':
         # Get the file from post request
-        
         num = request.form.get('num')
         title = request.form.get('title')
         subtitle = request.form.get('subtitle')
@@ -116,7 +111,7 @@ def predict():
         iterations = request.form.get('iterations')
         
         f = request.files['file']
-        fn = 'tmpx.jpg'#str(num).zfill(4) + ".jpg"
+        fn = 'tmpx.jpg'
         cfn = str(num).zfill(4) + ".jpg"
         svg_fn = str(num).zfill(4) + ".svg"
         basepath = './static'
