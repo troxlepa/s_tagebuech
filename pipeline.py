@@ -21,9 +21,9 @@ import os
 
 
 
-def run_external(base_path,num,title_,subtitle_,fgcol_,bgcol_):
+def run_external(base_path,num,title_,subtitle_,fgcol_,bgcol_,description_,invert_text_,ada_hi_,ada_lo_,iterations_):
     nr = str(num).zfill(4)
-    config = [nr,17,7,False,2,1,1,True,True,True,False,fgcol_]
+    config = [nr,int(ada_hi_),int(ada_lo_),False,int(iterations_),1,1,True,True,True,False,fgcol_]
 
     input_file = f'{base_path}/inputs/tmpx.jpg'
     output_file = f'{base_path}/tmp/out.svg'
@@ -43,7 +43,7 @@ def run_external(base_path,num,title_,subtitle_,fgcol_,bgcol_):
     ts = int(time.time())
     title = title_
     subtitle = subtitle_
-    data = {'sid':pid[:4],'id':pid,'timestamp':ts,'title':title,'subtitle':subtitle,'fgcol':fgcol_,'bgcol':bgcol_}
+    data = {'sid':pid[:4],'id':pid,'timestamp':ts,'title':title,'subtitle':subtitle,'fgcol':fgcol_,'bgcol':bgcol_,'description':description_,'invert_text':invert_text_}
     return output_svg,data
 
 def append_svg(image,path: Path,color):
@@ -139,7 +139,7 @@ def run_pipeline(fns,config):
         svg_code = fp.read()
         image = pyvips.Image.new_from_file(args['output'], dpi=300)
         image.write_to_file(output_file_png)
-
+    print('get HZ')
     horizont = get_horizont(output_file_png,iterations)
     horizont = cv2.bitwise_not(horizont)
     if show_plt:
@@ -164,17 +164,17 @@ def run_pipeline(fns,config):
         # convert png to pnm
         print(f"converting {output_file_png} to {output_file_pnm}")
         subprocess.run(["convert",output_file_png,output_file_pnm])
-        time.sleep(3)
+        time.sleep(4)
         print("running autotrace...")
         subprocess.run(["autotrace", "--centerline", f"--output-file={output_file_svg}", "--error-threshold=1", "--dpi=72", output_file_pnm])
         print("finished")
-        time.sleep(8)
+        time.sleep(10)
         fp = open(output_file_svg,"r")
         svg_code = fp.read()
         fp.close()
         idx = svg_code.find('<path')
         svg_code = svg_code[idx:]
-        newheader = f'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"> <svg width="{width}" height="{height*1.1}" xmlns="http://www.w3.org/2000/svg">'
+        newheader = f'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"> <svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">'
         style_code = '<style type="text/css"> path{stroke-width:20;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}</style>'
         if do_mask:
             mask_code = append_svg(horizont,plist,fgcol)

@@ -2,8 +2,6 @@
 <html>
 <head>
     <title>{{title}}</title>
-    <script src="./static/js/jscolor-2.5.1/jscolor.js"></script>
-    <link rel="stylesheet" href="./static/css/cropper.css">
     <style>
         #form{
             display: flex;
@@ -24,59 +22,20 @@
                 <p> Image: <input type="file" id="file_input" name="file"></p>
                 <div class="div2">
                     <img id="previewImg" src="#" alt="Preview" width="400px"/>
-                    <p>
-                        <button type="button" id="button">Zuschneiden</button>
-                      </p>
                 </div>
-                <p> Vordergrund Farbe: <input name="fgcol" class="color" value="#E0BD87FF" data-jscolor="{}"></p>
-                <p> Hintergrund Farbe: <input name="bgcol" class="color" value="#FFF1C3FF" data-jscolor="{}"></p>
+                <p> Vordergrund Farbe: <input type="color" name="fgcol" class="color" value="#E0BD87"></p>
+                <p> Hintergrund Farbe: <input type="color" name="bgcol" class="color" value="#FFF1C3"></p>
+                <p> Dunkler Vordergrund? : <input type="checkbox" id="invert_text" name="invert_text"></p>
+                <p> Skinning Iterations: <input type="number" id="iterations" name="iterations" value="2"></p>
+                <p> Adaptive Threshold: <input type="number" id="ada_hi" name="ada_hi" value="17"></p>
+                <p> Adaptive Size: <input type="number" id="ada_lo" name="ada_lo" value="7"></p>
                 <p> Titel: <input type="text" id="title" name="title" value=""></p>
                 <p> Datum: <input type="date" id="subtitle" name="subtitle" value=""></p>
+                <p> Description: <textarea id="description" name="description" value="" rows="4" cols="50"></textarea></p>
                 <input type="hidden" id="num" name="num" value={{num}}>
                 <p> <input type="submit" value="Submit"> </p>
             </form>   
         </div>
     </div>
-    <script src="./static/js/cropper.js"></script>
-    <script>
-        var croppable = false;
-        var cropper;
-        var image = document.getElementById('previewImg');
-        var button = document.getElementById('button');
-        var file = document.getElementById('file_input');
-        file.onchange = evt => {
-            const [f] = file.files
-            if (f) {
-                previewImg.src = URL.createObjectURL(f);
-                
-                cropper = new Cropper(image, {
-                    viewMode: 1,
-                    ready: function () {
-                    croppable = true;
-                    },
-                });
-            }
-        } 
-
-        button.onclick = function () {
-            var croppedCanvas;
-            var fileInput = document.getElementById('file_input');
-            if (!croppable) {
-                return;
-            }
-
-            croppedCanvas = cropper.getCroppedCanvas();
-            var dataURL = croppedCanvas.toDataURL();
-
-            croppedCanvas.toBlob((blob) => {
-                let file = new File([blob], "crop.jpg",{type:"image/jpeg", lastModified: new Date().getTime()});
-                let container = new DataTransfer();
-                container.items.add(file);
-                fileInput.files = container.files;
-            });
-            var myForm = document.getElementById('form');
-        };
-
-    </script>
 </body>
 </html>

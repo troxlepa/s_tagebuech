@@ -36,10 +36,28 @@ def read_settings():
     data = json.loads(blob.download_as_string(client=None))
     return data
 
+def generate_html():
+    data = read_settings()
+    data = sorted(data, key=lambda x: -x['timestamp'])
+    templateData = {
+        'data' : data[:10],
+        'prefix': url_prefix,
+        'hide_buttons':True
+        }
+    save_string_to_html(render_template('comp.html',**templateData))
+
+def save_string_to_html(data):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(project_name)
+    blob = bucket.blob("index.html")
+    blob.cache_control = 'no-cache'
+    blob.upload_from_string(data,content_type='text/html')
+
 def update_settings(data):
     storage_client = storage.Client()
     bucket = storage_client.bucket(project_name)
     blob = bucket.blob("settings.json")
+    blob.cache_control = 'no-cache'
     blob.upload_from_string(json.dumps(data))
 
 def upload_image(filepath, path, filename):
@@ -89,8 +107,13 @@ def predict():
         num = request.form.get('num')
         title = request.form.get('title')
         subtitle = request.form.get('subtitle')
+        description = request.form.get('description')
         fgcol = request.form.get('fgcol')
         bgcol = request.form.get('bgcol')
+        invert_text = request.form.get('invert_text')
+        ada_hi = request.form.get('ada_hi')
+        ada_lo = request.form.get('ada_lo')
+        iterations = request.form.get('iterations')
         
         f = request.files['file']
         fn = 'tmpx.jpg'#str(num).zfill(4) + ".jpg"
@@ -104,7 +127,7 @@ def predict():
         success = upload_image(file_path,"static/uploads/",cfn)
         if not success:
             print("upload failed!!")
-        output_svg,settings_data = run_external(basepath,num,title,subtitle,fgcol,bgcol)
+        output_svg,settings_data = run_external(basepath,num,title,subtitle,fgcol,bgcol,description,invert_text,ada_hi,ada_lo,iterations)
         success = upload_svg(output_svg,"static/results/",svg_fn)
 
         #update settings
@@ -119,7 +142,9 @@ def predict():
             'mpath': str(num).zfill(4)+".png",
             'prefix': url_prefix
             }
-        return render_template('result.html',**templateData)
+        outstr = render_template('result.html',**templateData)
+        generate_html()
+        return outstr
     return ""
 
 @app.route('/', methods=['GET'])
@@ -128,7 +153,8 @@ def comp():
     data = sorted(data, key=lambda x: -x['timestamp'])
     templateData = {
         'data' : data[:10],
-        'prefix': url_prefix
+        'prefix': url_prefix,
+        'hide_buttons':False
         }
     return render_template('comp.html',**templateData)
 
@@ -136,10 +162,15 @@ def comp():
 def home():
     return "hello from flask 2: "
 
+@app.route('/ref', methods=['GET'])
+def refreshAll():
+    generate_html()
+    return redirect('/')
 
 @app.route('/delete/<num>', methods=['POST','GET'])
 def delete(num):
     data = read_settings()
     res = [el for el in data if not (str(el['id']) == num)]
     update_settings(res)
+    generate_html()
     return redirect('/')

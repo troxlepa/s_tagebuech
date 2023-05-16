@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <document>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+    <meta charset="UTF-8">
+    <title>Tagebuch</title>
     <style>
     document,body{
             margin:0px;
@@ -12,55 +15,57 @@
         }
         .msvg{
             height:50vh;
-            padding-top:8vh;
         }
         
         .tit{
-            position:absolute;
-            margin:10px;
             font-family: sans-serif;
             text-transform: uppercase;
-            font-weight: 900;
-            line-height: 1.2em;
-            font-size:1.2em;
-            min-width: 50vw;
-            opacity: 0.9;
+            font-weight: 400;
+            font-size:1em;
+            opacity: 0.6;
+            font-style: oblique;
         }
         .sec{
-            height:53.4vh;
+            height:100vh;
             display: inline-block;
             flex-grow: 1
         }
         .maintit{
-            position:absolute;
-            margin:10px;
             font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
             text-transform: uppercase;
             font-weight: 800;
-            font-size:3em;
-            min-width: 50vw;
+            font-size:1.2em;
         }
-        @media screen and (min-width: 900px) {
-            .msvg{
-                height:100vh;
-            }
-            .sec{
-                height:98.9vh;
-            }
+        .desc{
+            margin-top:-10px;
+            padding:10px;
+            font-family: sans-serif;
+            font-size: 0.8em;
+            height:100vh;
+        }
+        .texty{
+            overflow:scroll;
+            max-height: 28vh;
+            max-width: 100vw;
+        }
+        .white-text{
+            color:#fff;
         }
     </style>
 
 </head>
 <body>
-    <a href="/upload" style="position:fixed;background: #ffffff;bottom:10px;padding:10px">Neuer Eintrag</a>
     <div id="sections">
     
     {% for el in data %}
     <div class="sec" style="background: {{el.bgcol}};">
-        <a style="margin-top:10px;" class="tit" href="/delete/{{el.id}}">#{{el.sid}}</a>
-        <h1 style="margin-top:40px;" class="tit">{{el.title}}</h1>
-        <h1 style="margin-top:60px" class="tit">{{el.subtitle}}</h1>
         <img class="msvg" src="{{prefix}}/results/{{el.id}}.svg"></img> 
+        <div class="desc" style="background: {{el.fgcol}};">
+        <h1 class="maintit {{'white-text' if el.invert_text }}">{{el.title}}</h1>
+        <h1 class="tit {{'white-text' if el.invert_text }}">{{el.subtitle}}</h1>
+        <p class="texty {{'white-text' if el.invert_text }}">{{el.description}}</p>
+        <a style="margin-top:10px; {{'display:none' if hide_buttons }}" class="tit" href="/delete/{{el.id}}">Delete</a>
+        </div>
     </div>
     {% endfor %}
     </div>
