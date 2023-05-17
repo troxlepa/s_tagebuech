@@ -154,7 +154,4 @@ def run_pipeline(fns,config):
     fpw = open(output_file_svg,"w")
     fpw.write(res_code)
     fpw.close()
-    del img
-    del image
-    del bm
     return res_code
