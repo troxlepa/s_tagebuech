@@ -14,10 +14,8 @@ url_prefix = f"https://storage.googleapis.com/{project_name}/static"
 basepath = os.path.join(os.path.dirname(__file__),'static')
 if not os.path.exists(basepath):
     os.mkdir(basepath)
-paths = ['inputs','outputs','masks','tmp']
-for name in paths:
-    if not os.path.exists(os.path.join(basepath,name)):
-        os.mkdir(os.path.join(basepath,name))
+if not os.path.exists(os.path.join(basepath,'tmp')):
+    os.mkdir(os.path.join(basepath,'tmp'))
 
 def read_image(filename):
     storage_client = storage.Client()
@@ -109,6 +107,9 @@ def predict():
         ada_hi = request.form.get('ada_hi')
         ada_lo = request.form.get('ada_lo')
         iterations = request.form.get('iterations')
+        hscale = request.form.get('hscale')
+        blur = request.form.get('blur')
+        strokewidth = request.form.get('strokewidth')
         
         f = request.files['file']
         fn = 'tmpx.jpg'
@@ -116,13 +117,13 @@ def predict():
         svg_fn = str(num).zfill(4) + ".svg"
         basepath = './static'
         file_path = os.path.join(
-            basepath,'inputs', fn)
+            basepath,'tmp', fn)
         f.save(file_path)
 
         success = upload_image(file_path,"static/uploads/",cfn)
         if not success:
             print("upload failed!!")
-        output_svg,settings_data = run_external(basepath,num,title,subtitle,fgcol,bgcol,description,invert_text,ada_hi,ada_lo,iterations)
+        output_svg,settings_data = run_external(basepath,num,title,subtitle,fgcol,bgcol,description,invert_text,ada_hi,ada_lo,iterations,hscale,blur,strokewidth)
         success = upload_svg(output_svg,"static/results/",svg_fn)
 
         #update settings
@@ -169,3 +170,38 @@ def delete(num):
     update_settings(res)
     generate_html()
     return redirect('/')
+
+@app.route('/textedit/<num>', methods=['POST','GET'])
+def textedit(num):
+    data = read_settings()
+    for el in data:
+        if str(el['id']) == str(num):
+            templateData = {
+                'el' : el
+                }
+            print(num)
+            return render_template('textedit.html',**templateData)
+    return ""
+
+@app.route('/applytextedit', methods=['POST'])
+def applytextedit():
+    if request.method == 'POST':
+        # Get the file from post request
+        num = request.form.get('num')
+        title = request.form.get('title')
+        subtitle = request.form.get('subtitle')
+        description = request.form.get('description')
+        bgcol = request.form.get('bgcol')
+        invert_text = request.form.get('invert_text')
+        data = read_settings()
+        for el in data:
+            if str(el['id']) == str(num):
+                el['title'] = title
+                el['subtitle'] = subtitle
+                el['description'] = description
+                el['bgcol'] = bgcol
+                el['invert_text'] = invert_text
+        update_settings(data)
+        generate_html()
+        return redirect('/')
+    return ""

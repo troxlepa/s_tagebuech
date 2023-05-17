@@ -12,20 +12,17 @@ import subprocess
 import time
 import os
 
-
-
-def run_external(base_path,num,title_,subtitle_,fgcol_,bgcol_,description_,invert_text_,ada_hi_,ada_lo_,iterations_):
+def run_external(base_path,num,title_,subtitle_,fgcol_,bgcol_,description_,invert_text_,ada_hi_,ada_lo_,iterations_,hscale_,blur_,strokewidth_):
     nr = str(num).zfill(4)
-    config = [nr,int(ada_hi_),int(ada_lo_),False,int(iterations_),1,1,True,True,True,False,fgcol_]
+    config = [int(ada_hi_),int(ada_lo_),int(iterations_),fgcol_,hscale_,blur_,strokewidth_]
 
-    input_file = f'{base_path}/inputs/tmpx.jpg'
+    input_file = f'{base_path}/tmp/tmpx.jpg'
     output_file = f'{base_path}/tmp/out.svg'
     output_file_png = f'{base_path}/tmp/out.png'
     output_file_pnm = f'{base_path}/tmp/out.pnm'
-    output_file_svg = f'{base_path}/outputs/tmpx.svg'
-    mask_file = f'{base_path}/masks/tmp_mask.png'
-    print(input_file)
-    print(os.listdir('/app/static/inputs'))
+    output_file_svg = f'{base_path}/tmp/outtmpx.svg'
+    mask_file = f'{base_path}/tmp/tmp_mask.png'
+
     if not os.path.exists(input_file):
         print("ERROR: file not found")
 
@@ -61,8 +58,8 @@ def append_svg(image,path: Path,color):
     ret_code += f'<path stroke="none" fill="{color}" style="filter: drop-shadow(-20px -20px 20px rgb(0 0 0 / 0.5))" fill-rule="evenodd" d="{"".join(parts)}"/>'
     return ret_code
 
-def backend_svg(args, image, path: Path, include_drop_shadow = False):
-    with open(args['output'], "w") as fp:
+def backend_svg(file, color, image, path: Path, include_drop_shadow = False):
+    with open(file, "w") as fp:
         fp.write(
             '<svg version="1.1"' +
             ' xmlns="http://www.w3.org/2000/svg"' +
@@ -90,90 +87,74 @@ def backend_svg(args, image, path: Path, include_drop_shadow = False):
         if include_drop_shadow:
             fp.write(
                 '<path stroke="none" fill="%s" style="filter: drop-shadow(-10px -20px 15px rgb(0 0 0 / 0.5))" fill-rule="evenodd" d="%s"/>'
-                % (args['color'], "".join(parts))
+                % (color, "".join(parts))
             )
         else:
             fp.write(
                 '<path stroke="none" fill="%s" fill-rule="evenodd" d="%s"/>'
-                % (args['color'], "".join(parts))
+                % (color, "".join(parts))
             )
         fp.write("</svg>")
 def run_pipeline(fns,config):
 
-    num,ada_thres,ada_size,rot,iterations,crop_l,crop_r,do_prep,do_mask,write_svg,show_plt,fgcol = config
+    ada_thres,ada_size,iterations,fgcol,hscale,blur,strokewidth = config
     input_file,output_file,output_file_png,output_file_pnm,output_file_svg,mask_file = fns
 
-    if do_prep:
-        img = cv2.imread(input_file,0)
-        scale_percent = 50 # percent of original size
-        width = int(img.shape[1] * scale_percent / 100)
-        height = int(img.shape[0] * scale_percent / 100)
-        dim = (int(1000 * width/height), 1000)
-        if height > 1000:
-            # resize image
-            img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
-        if rot:
-            img = cv2.rotate(img,rotateCode=cv2.ROTATE_90_COUNTERCLOCKWISE)
-        img = cv2.medianBlur(img,3)
-        img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, ada_thres, ada_size)
-        img = img[:, crop_l:-crop_r]
-        #img = cv2.resize(img, (0,0), fx=0.5, fy=0.5) 
-        image = Image.fromarray(img)
-        if show_plt:
-            plt.imshow(image)
-            plt.show()
-        bm = Bitmap(image, blacklevel=0.5)
-        plist = bm.trace(alphamax=2,turdsize=2)
-        args = {}
-        args['output'] = output_file
-        args['color'] = '#FFFFFF'
-        backend_svg(args, image, plist)
-        fp = open(args['output'],"r")
-        svg_code = fp.read()
-        image = pyvips.Image.new_from_file(args['output'], dpi=300)
-        image.write_to_file(output_file_png)
-    print('get HZ')
+    img = cv2.imread(input_file,0)
+    hscale = int(hscale)
+    aspect = img.shape[1] / img.shape[0]
+    wscale = int(hscale * aspect)
+    print(img.shape[0],img.shape[1],wscale,hscale)
+    img = cv2.resize(img, (wscale,hscale), interpolation = cv2.INTER_AREA)
+    img = cv2.medianBlur(img,int(blur))
+    img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, ada_thres, ada_size)
+
+    image = Image.fromarray(img)
+    bm = Bitmap(image, blacklevel=0.5)
+    plist = bm.trace(alphamax=2,turdsize=2)
+    color = '#FFFFFF'
+    backend_svg(output_file, color, image, plist)
+    pyvips.cache_set_max(0)
+    image = pyvips.Image.new_from_file(output_file, dpi=300,access="sequential")
+    image.write_to_file(output_file_png)
+    print('written to',output_file_png)
     horizont = get_horizont(output_file_png,iterations)
     horizont = cv2.bitwise_not(horizont)
-    if show_plt:
-        plt.imshow(horizont)
-        plt.show()
+
     plt.imsave(mask_file,horizont)
     bm = Bitmap(horizont, blacklevel=0.5)
     plist = bm.trace(alphamax=1,turdsize=0)
-    args = {}
-    args['output'] = 'temp.svg'
-    args['color'] = '#000000'
     horizont = Image.fromarray(horizont)
 
-    if write_svg:
-        img = cv2.imread(output_file_png,0)
-        skeleton_lee = skeletonize(img, method='lee')
-        skeleton_lee = cv2.bitwise_not(skeleton_lee)
-        width = img.shape[1]
-        height = img.shape[0]
-        cv2.imwrite(output_file_png,skeleton_lee)
+    img = cv2.imread(output_file_png,0)
+    skeleton_lee = skeletonize(img, method='lee')
+    skeleton_lee = cv2.bitwise_not(skeleton_lee)
+    width = img.shape[1]
+    height = img.shape[0]
+    cv2.imwrite(output_file_png,skeleton_lee)
 
-        # convert png to pnm
-        print(f"converting {output_file_png} to {output_file_pnm}")
-        subprocess.run(["convert",output_file_png,output_file_pnm])
-        time.sleep(4)
-        print("running autotrace...")
-        subprocess.run(["autotrace", "--centerline", f"--output-file={output_file_svg}", "--error-threshold=1", "--dpi=72", output_file_pnm])
-        print("finished")
-        time.sleep(10)
-        fp = open(output_file_svg,"r")
-        svg_code = fp.read()
-        fp.close()
-        idx = svg_code.find('<path')
-        svg_code = svg_code[idx:]
-        newheader = f'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"> <svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">'
-        style_code = '<style type="text/css"> path{stroke-width:20;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}</style>'
-        if do_mask:
-            mask_code = append_svg(horizont,plist,fgcol)
-        res_code = newheader + style_code + mask_code + svg_code 
-        fpw = open(output_file_svg,"w")
-        fpw.write(res_code)
-        fpw.close()
-        return res_code
-    return ""
+    # convert png to pnm
+    print(f"converting {output_file_png} to {output_file_pnm}")
+    subprocess.run(["convert",output_file_png,output_file_pnm])
+    time.sleep(4)
+    print("running autotrace...")
+    subprocess.run(["autotrace", "--centerline", f"--output-file={output_file_svg}", "--error-threshold=1", "--dpi=72", output_file_pnm])
+    print("finished")
+    time.sleep(8)
+    fp = open(output_file_svg,"r")
+    svg_code = fp.read()
+    fp.close()
+    idx = svg_code.find('<path')
+    svg_code = svg_code[idx:]
+    newheader = f'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"> <svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">'
+    style_code = '<style type="text/css"> path{stroke-width:'+str(int(strokewidth))+';stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}</style>'
+
+    mask_code = append_svg(horizont,plist,fgcol)
+    res_code = newheader + style_code + mask_code + svg_code 
+    fpw = open(output_file_svg,"w")
+    fpw.write(res_code)
+    fpw.close()
+    del img
+    del image
+    del bm
+    return res_code

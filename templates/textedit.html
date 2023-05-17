@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<head>
+    <title>Textedit</title>
+</head>
+<body>
+    <div class="head">
+        <h1>Resultat</h1>
+        <a href="/upload">Neuer Eintrag</a><br>
+        <a href="/">Zum Tagebuch</a><br>
+    </div>
+
+    <form id="form" action="/applytextedit" method="post" enctype="multipart/form-data">
+        <p> Hintergrund Farbe: <input type="color" name="bgcol" class="color" value="{{el.bgcol}}"></p>
+        <p> Dunkler Vordergrund? : <input type="checkbox" id="invert_text" name="invert_text"></p>
+        <p> Titel: <input type="text" id="title" name="title" value="{{el.title}}"></p>
+        <p> Datum: <input type="date" id="subtitle" name="subtitle" value="{{el.subtitle}}"></p>
+        <p> Description: <textarea id="description" name="description" value="" rows="4" cols="50">{{el.description}}</textarea></p>
+        <input type="hidden" id="num" name="num" value={{el.id}}>
+        <p> <input type="submit" value="Submit"> </p>
+    </form>
+     
+</body>

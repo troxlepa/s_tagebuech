@@ -21,12 +21,3 @@ def get_horizont(input_file,iterations):
     mask = cv2.dilate(mask, kernel, iterations=iterations)
     mask = cv2.bitwise_not(mask)
     return mask
-
-def run():
-    input_file = './out4.png'
-    mask = get_horizont(input_file,10)
-    cv2.imshow('Dilation', mask)
-    cv2.waitKey(0)
-
-if __name__ == "__main__":
-    run()
